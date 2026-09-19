@@ -1,0 +1,52 @@
+' Hola.vbs - doble click para que la computadora hable
+Option Explicit
+
+Dim texto, voz, vozLista, i
+
+Function Base64ToString(b64)
+    Dim xml, nodo, stream
+    Set xml = CreateObject("MSXML2.DOMDocument.6.0")
+    Set nodo = xml.createElement("b64")
+    nodo.dataType = "bin.base64"
+    nodo.text = b64
+
+    Set stream = CreateObject("ADODB.Stream")
+    stream.Type = 1
+    stream.Open
+    stream.Write nodo.nodeTypedValue
+    stream.Position = 0
+    stream.Type = 2
+    stream.Charset = "utf-8"
+    Base64ToString = stream.ReadText
+    stream.Close
+End Function
+
+Set voz = CreateObject("SAPI.SpVoice")
+
+Set vozLista = voz.GetVoices("Language=280A")   ' Espanol (Mexico)
+If vozLista.Count = 0 Then
+    Set vozLista = voz.GetVoices("Language=40A") ' Espanol (Espana)
+End If
+If vozLista.Count = 0 Then
+    Set vozLista = voz.GetVoices()
+    For i = 0 To vozLista.Count - 1
+        If InStr(LCase(vozLista.Item(i).GetDescription()), "spanish") > 0 Or _
+           InStr(LCase(vozLista.Item(i).GetDescription()), "espa") > 0 Then
+            Set voz.Voice = vozLista.Item(i)
+            Exit For
+        End If
+    Next
+Else
+    Set voz.Voice = vozLista.Item(0)
+End If
+
+voz.Rate = 0     ' velocidad: -10 (lento) a 10 (rapido)
+voz.Volume = 0 
+
+voz.Speak Base64ToString("TGFzIHNpZ3VpZW50ZXMgcGVyc29uYXMgcmVhbGl6YXJvbiBlbCBlamVyY2ljaW8gY29ycmVjdGFtZW50ZTo=")
+voz.Speak "Jose Velez alias el profe" 
+' De aquí hacia abajo los estudiantes.
+voz.Speak "A continuacion los integrantes del equipo de los extraditables:"
+voz.Speak "Andres Palacio (Este es el líder)"
+voz.Speak " Jhojan Mosquera"
+voz.Speak Base64ToString("U2kgbm8gZXNjdWNobyBzdSBub21icmUsIGRlYmUgcmVhbGl6YXIgZWwgZWplcmNpY2lvIG90cmEgdmV6")
